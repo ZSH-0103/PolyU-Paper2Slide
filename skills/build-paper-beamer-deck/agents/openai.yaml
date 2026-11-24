@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paper PDF to Beamer Deck"
+  short_description: "Build polished paper presentations from PDFs"
+  default_prompt: "Use $build-paper-beamer-deck to turn this research paper PDF into an English Beamer presentation using my red lab template."

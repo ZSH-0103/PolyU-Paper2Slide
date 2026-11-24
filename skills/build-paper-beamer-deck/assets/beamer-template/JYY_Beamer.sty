@@ -1,0 +1,49 @@
+% Red laboratory Beamer theme for paper presentations.
+\RequirePackage{tikz}
+
+\mode<presentation>
+
+\renewcommand\tablename{Table}
+\renewcommand\figurename{Figure}
+\ProcessOptionsBeamer
+
+\useoutertheme{default}
+\setbeamertemplate{headline}{}
+\setbeamertemplate{navigation symbols}{}
+
+% Reference slide coordinates are scaled to a 160 mm by 90 mm Beamer page.
+\definecolor{PolyURed}{HTML}{990F29}
+\newcommand{\PolyULogo}[4]{\node[anchor=north west,inner sep=0pt,outer sep=0pt]
+ at ([xshift=#1,yshift=-#2]current page.north west)
+ {\includegraphics[width=#3,height=#4]{polyu-lockup.png}};}
+\newcommand{\PolyUBars}[1]{\fill[PolyURed] (current page.north west) rectangle ([yshift=-#1]current page.north east);
+\fill[PolyURed] (current page.south west) rectangle ([yshift=1.5mm]current page.south east);}
+\newcommand{\PolyUCover}[4]{\begin{tikzpicture}[remember picture,overlay]
+\PolyUBars{38.75mm}\PolyULogo{5.5mm}{3.5mm}{30.5mm}{7.375mm}
+\node[text=white,font=\LARGE\bfseries,align=center,text width=.88\paperwidth] at ([yshift=-24mm]current page.north){#1};
+\node[align=center,text width=.92\paperwidth] at ([yshift=-51mm]current page.north){#2};
+\node[align=center,text width=.92\paperwidth,font=\small] at ([yshift=-63mm]current page.north){#3};
+\node[text=PolyURed,font=\bfseries] at ([yshift=-75mm]current page.north){#4};
+\end{tikzpicture}}
+\setbeamertemplate{headline}{\begin{tikzpicture}[remember picture,overlay]
+\PolyUBars{9mm}\PolyULogo{5mm}{1.50769mm}{24.75mm}{5.98463mm}
+\node[anchor=east,text=white,font=\small\bfseries] at ([xshift=-5mm,yshift=-4.5mm]current page.north east){\insertsectionhead};
+\end{tikzpicture}\vspace*{9mm}}
+\setbeamertemplate{footline}{\hfill\usebeamerfont{page number in head/foot}\insertframenumber\,/\,\inserttotalframenumber\hspace{4mm}\vspace{2.4mm}}
+
+
+\useinnertheme{circles}
+
+\xdefinecolor{tsinghua}{RGB}{153,15,41}
+\setbeamercolor{page number in head/foot}{fg=white,bg=tsinghua}
+\setbeamercolor{frametitle}{bg=white,fg=tsinghua}
+\setbeamercolor{title}{bg=tsinghua}
+\setbeamerfont{frametitle}{size=\large}
+\setbeamercolor{structure}{fg=tsinghua}
+\setbeamercolor{item projected}{fg=white}
+\setbeamercolor{block title}{bg=tsinghua,fg=white}
+\setbeamertemplate{blocks}[rounded][shadow=true]
+\setbeamertemplate{caption}[numbered]
+
+\mode<all>
+

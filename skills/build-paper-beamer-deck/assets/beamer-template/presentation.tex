@@ -1,0 +1,86 @@
+% !TEX program = xelatex
+\documentclass[aspectratio=169]{beamer}
+
+\usepackage[fontset=fandol]{ctex}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb,booktabs,array,multirow}
+\usepackage{graphicx}
+\usepackage{JYY_Beamer}
+
+\AtBeginSection[]{}
+\AtBeginSubsection[]{}
+
+\title{PAPER TITLE}
+\author[First Author et al.]{First Author et al.}
+\institute{AFFILIATIONS}
+\date{}
+
+\newcommand{\paperpdf}{paper.pdf}
+\newcommand{\paperclip}[3][]{%
+  \includegraphics[page=#2,trim={#3},clip,#1]{\paperpdf}%
+}
+\newcommand{\papercaption}[2]{%
+  \par\vspace{0.06cm}{\centering\fontsize{7.4}{8.2}\selectfont\textbf{Figure #1:} #2\par}%
+}
+
+\begin{document}
+\kaishu
+
+\begin{frame}[plain]
+  \PolyUCover{\inserttitle}{\insertauthor}{\insertinstitute}{\insertdate}
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents[sectionstyle=show,subsectionstyle=hide]
+\end{frame}
+
+\section{Motivation and Background}
+
+\begin{frame}{Motivation}
+  \begin{itemize}
+    \item Replace with concise, paper-grounded motivation.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Background}
+  \begin{center}
+    % Example: \paperclip[width=.8\linewidth]{PDF_PAGE}{LEFT BOTTOM RIGHT TOP}
+    % \papercaption{FIGURE_NUMBER}{EXACT PAPER CAPTION.}
+  \end{center}
+\end{frame}
+
+\section{System Overview and Key Insight}
+
+\begin{frame}{System Overview}
+  \begin{itemize}
+    \item Replace with the paper's original overview or workflow figure and key insight.
+  \end{itemize}
+\end{frame}
+
+\section{Mechanism and Model}
+
+\begin{frame}{Mechanism and Model}
+  \begin{itemize}
+    \item Replace with the paper-grounded mechanism, model, and essential equations.
+  \end{itemize}
+\end{frame}
+
+\section{Method}
+
+\begin{frame}{Method}
+  \begin{itemize}
+    \item Replace with the paper's method or algorithm and its inputs and outputs.
+  \end{itemize}
+\end{frame}
+
+\section{Prototype and Evaluation}
+
+\begin{frame}{Prototype and Evaluation}
+  \begin{itemize}
+    \item Replace with the prototype, evaluation setup, and main experimental results.
+  \end{itemize}
+\end{frame}
+
+% Add paper-specific frames and an optional Critical Assessment section.
+
+\end{document}

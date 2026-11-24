@@ -1,0 +1,13 @@
+jobs/
+examples/
+.venv/
+.env
+.env.*
+__pycache__/
+*.pyc
+.DS_Store
+~$*
+library/.import-*/
+library/*/
+!library/polyu-transcope/
+!library/5f76e45a55f318926c7d3b8a/

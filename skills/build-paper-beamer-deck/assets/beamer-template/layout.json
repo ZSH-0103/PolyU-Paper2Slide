@@ -1,0 +1,27 @@
+{
+  "reference": "Transcope_12min_PolyU_animated.pptx",
+  "canvas_emu": [
+    12192000,
+    6858000
+  ],
+  "red": "990F29",
+  "top_height_emu": {
+    "cover": 2952750,
+    "body": 685800
+  },
+  "bottom_height_emu": 114300,
+  "logo_emu": {
+    "cover": [
+      419100,
+      266700,
+      2324100,
+      561975
+    ],
+    "body": [
+      381000,
+      114886,
+      1885950,
+      456029
+    ]
+  }
+}
