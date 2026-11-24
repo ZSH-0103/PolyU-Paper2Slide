@@ -26,7 +26,7 @@ python server.py
 
 Open **http://127.0.0.1:8769/**. Upload a text-based PDF, choose a template and confirm the speaking time. Add any audience, language or figure preferences in the chat. Generate, watch the progress indicator, review the outline and download the PPTX. Slides carry source-page references and timed speaker notes. Short talks prioritize the main idea and strongest evidence. Longer talks cover more of the paper in section order.
 
-Use **模板库 → 导入 PPTX** to add a template. The importer takes cover and body designs from the first two slides; use a clean template for best results. The bundled Blue design preserves the native closing slide. User uploads and completed jobs stay under local directories. The configured model receives paper text and, when vision is enabled, a contact sheet of candidate exhibit pages.
+Use **模板库 → 导入 PPTX** to add a template. The importer takes cover and body designs from the first two slides; use a clean template for best results. The bundled Blue design preserves the native closing layout. Blue uses section-prefixed titles; PolyU Red uses a separate section label beside the logo and a left-aligned slide title, both in 20.3 pt Arial Bold. User uploads and completed jobs stay under local directories. The configured model receives paper text and, when vision is enabled, a contact sheet of candidate exhibit pages.
 
 ## Model setup
 

@@ -20,7 +20,9 @@ All POSTs require the header `X-Studio: 1`. The server validates its local host 
 
 ## Model contract
 
-Implement `call_model(work,prompt,*,image=None,timeout=90) -> str` in models.py. A conversational call returns plain text. A planner call returns a single JSON object with title, authors and slides. Each content slide has a title, one to three {keyword,text} points, speaker notes, a one-based physical PDF page, and an optional exhibit {label,box:[left,top,right,bottom]}. Box coordinates are relative to the PDF page on a 0–1000 scale. Defaults, validation and example JSON are in generate.py. The server can switch providers without changing UI routes.
+Implement `call_model(work,prompt,*,image=None,timeout=90) -> str` in models.py. A conversational call returns plain text. A planner call returns a single JSON object with title, authors and slides. Each content slide has a short paper section label (section), a title, one to three {keyword,text} points, speaker notes, a one-based physical PDF page, and an optional exhibit {label,box:[left,top,right,bottom]}. Box coordinates are relative to the PDF page on a 0–1000 scale. Defaults, validation and example JSON are in generate.py. The server can switch providers without changing UI routes.
+
+Red content slides show the section label beside the logo and the specific title below the red band. Both use bold, left-aligned Arial 20.3 pt. Blue uses “Section · Title” throughout, including its native cover and closing.
 
 ## Check a rebuild
 

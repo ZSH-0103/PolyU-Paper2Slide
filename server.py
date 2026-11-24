@@ -9,7 +9,7 @@ from uuid import uuid4
 from zipfile import BadZipFile
 import json,mimetypes,re,subprocess,threading,sys
 from templates import ROOT,LIB,RUNTIME,catalog,import_template,init_red
-from generate import MODEL,read_paper,plan,export,count_slides,chat_reply
+from generate import MODEL,read_paper,plan,export,count_slides,chat_reply,section_name,blue_heading
 
 JOBS=ROOT/'jobs'; WEB=ROOT/'web'
 PORT=8769; workers=ThreadPoolExecutor(max_workers=1)
@@ -47,6 +47,8 @@ def generate(work,minutes,theme,conversation=()):
         (work/'plan.json').write_text(json.dumps(data,ensure_ascii=False))
         export(work,theme,minutes,data)
         outline=[data['title']]+[s['title'] for s in data['slides']]
+        if theme.get('nativeBookends'):
+            outline=[blue_heading('Overview',data['title'])]+[blue_heading(section_name(s),s['title']) for s in data['slides']]
         if theme.get('closingTitle'): outline.append(theme['closingTitle'])
         write_state(work,status='done',step=4,message='PowerPoint 已生成',title=data['title'],pages=len(outline),minutes=minutes,theme=theme['name'],outline=outline)
     except subprocess.TimeoutExpired: write_state(work,status='error',message='模型调用超时。请检查网络，再点击重新生成。')

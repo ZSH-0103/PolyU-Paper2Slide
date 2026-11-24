@@ -21,9 +21,9 @@ def red_asset():
     assets=SKILL/'assets/beamer-template'
     return json.loads((assets/'layout.json').read_text()),assets/'polyu-lockup.png'
 
-def init_red():
+def init_red(refresh=False):
     folder=LIB/RED
-    if (folder/'template.json').exists(): return
+    if not refresh and (folder/'template.json').exists(): return
     folder.mkdir(exist_ok=True,parents=True)
     _,logo=red_asset()
     w,h=12192000,6858000
@@ -36,7 +36,7 @@ def init_red():
         pic=Image.open(logo).convert('RGBA').resize((round(sw/w*1600),round(sh/h*900)),Image.Resampling.LANCZOS)
         im.paste(pic,(round(x/w*1600),round(y/h*900)),pic)
         im.save(folder/(label+'.png'))
-    save_meta(folder, RED, 'PolyU Red', w,h,[.05,.17,.9,.22],[.05,.52,.9,.16],[.255,.012,.71,.08])
+    save_meta(folder, RED, 'PolyU Red', w,h,[.05,.17,.9,.22],[.05,.52,.9,.16],[.213,.012,.75,.08])
 
 def save_meta(folder, key, name,w,h,cover,sub,body):
     data=dict(id=key,name=name[:90],width=w,height=h,cover=cover,subtitle=sub,body=body)

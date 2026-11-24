@@ -1,5 +1,9 @@
 % Red laboratory Beamer theme for paper presentations.
 \RequirePackage{tikz}
+\RequirePackage{fontspec}
+\newfontfamily\PolyUHeadingFace{Arial}
+% 20.3 PowerPoint points on a 338.67 mm canvas, scaled to 160 mm.
+\newcommand{\PolyUHeadingSize}{\fontsize{9.59bp}{11.5bp}\selectfont}
 
 \mode<presentation>
 
@@ -15,7 +19,7 @@
 \definecolor{PolyURed}{HTML}{990F29}
 \newcommand{\PolyULogo}[4]{\node[anchor=north west,inner sep=0pt,outer sep=0pt]
  at ([xshift=#1,yshift=-#2]current page.north west)
- {\includegraphics[width=#3,height=#4]{polyu-lockup.png}};}
+ {\includegraphics[width=#3,height=#4]{polyu-lockup.pdf}};}
 \newcommand{\PolyUBars}[1]{\fill[PolyURed] (current page.north west) rectangle ([yshift=-#1]current page.north east);
 \fill[PolyURed] (current page.south west) rectangle ([yshift=1.5mm]current page.south east);}
 \newcommand{\PolyUCover}[4]{\begin{tikzpicture}[remember picture,overlay]
@@ -27,7 +31,7 @@
 \end{tikzpicture}}
 \setbeamertemplate{headline}{\begin{tikzpicture}[remember picture,overlay]
 \PolyUBars{9mm}\PolyULogo{5mm}{1.50769mm}{24.75mm}{5.98463mm}
-\node[anchor=east,text=white,font=\small\bfseries] at ([xshift=-5mm,yshift=-4.5mm]current page.north east){\insertsectionhead};
+\node[anchor=west,inner sep=0pt,text=white,font=\PolyUHeadingFace\bfseries\PolyUHeadingSize] at ([xshift=33.5mm,yshift=-4.5mm]current page.north west){\insertsectionhead};
 \end{tikzpicture}\vspace*{9mm}}
 \setbeamertemplate{footline}{\hfill\usebeamerfont{page number in head/foot}\insertframenumber\,/\,\inserttotalframenumber\hspace{4mm}\vspace{2.4mm}}
 
@@ -38,7 +42,8 @@
 \setbeamercolor{page number in head/foot}{fg=white,bg=tsinghua}
 \setbeamercolor{frametitle}{bg=white,fg=tsinghua}
 \setbeamercolor{title}{bg=tsinghua}
-\setbeamerfont{frametitle}{size=\large}
+\setbeamerfont{frametitle}{family=\PolyUHeadingFace,series=\bfseries,size=\PolyUHeadingSize}
+\setbeamertemplate{frametitle}[default][left]
 \setbeamercolor{structure}{fg=tsinghua}
 \setbeamercolor{item projected}{fg=white}
 \setbeamercolor{block title}{bg=tsinghua,fg=white}

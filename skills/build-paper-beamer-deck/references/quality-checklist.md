@@ -36,3 +36,5 @@
 - Required source assets are included in a portable source bundle.
 - If PPTX was requested, it is a real editable PPTX, with native text and intact figures, and its final output is also visually inspected.
 - Private build logs and intermediate renders are kept out of the deliverables directory.
+
+- Verify Red section labels and slide titles are both Arial 20.3 pt, bold and left-aligned in PowerPoint. Verify Blue titles have one section prefix separated by a centered dot, including the cover and closing.

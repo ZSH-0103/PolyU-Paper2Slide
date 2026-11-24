@@ -1,4 +1,5 @@
 """Render a PolyU widescreen result slide from a source exhibit and model-written JSON."""
+from polyu_logo import add_logo
 import argparse
 import io
 import re
@@ -73,9 +74,9 @@ def render(args):
             run.font.color.rgb = RGBColor.from_string(color)
     strip(0, 54)
     strip(531, 9)
-    slide.shapes.add_picture(str(assets/'polyu-lockup.png'), *layout['logo_emu']['body'])
-    label(430, 8, 497, 37, [('Experimental results', 'FFFFFF', True)], 19, PP_ALIGN.RIGHT)
-    label(33, 62, 894, 57, [(title, RED, True)], 23)
+    add_logo(slide, assets, layout['logo_emu']['body'])
+    label(201, 8, 726, 37, [(args.section, 'FFFFFF', True)], 20.3)
+    label(33, 62, 894, 57, [(title, RED, True)], 20.3)
     with Image.open(args.exhibit) as im:
         w, h = im.size
         buf = io.BytesIO()
@@ -102,6 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('exhibit', type=Path)
     parser.add_argument('output', type=Path)
     parser.add_argument('--caption', required=True, help='Original figure/table number and concise caption')
+    parser.add_argument('--section', default='Evaluation', help='Short label from the paper section')
     parser.add_argument('--paper', required=True, help='Paper title or citation')
     args = parser.parse_args()
     try:

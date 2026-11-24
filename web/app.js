@@ -66,9 +66,11 @@ function preview(){
  const asset=side==='cover'&&t.nativeBookends?'cover-preview':side;
  $('bg').src='/library/'+t.id+'/'+asset+'.png';$('bg').alt=t.name+' 模板背景';
  const isCover=side==='cover';const title=$('sampleTitle'),sub=$('sampleSub');
- title.textContent=isCover?'Research Presentation':'Research question';
+ const redBody=!isCover && t.id==='polyu-transcope';
+ title.textContent=isCover?'Research Presentation':redBody?'Motivation':t.nativeBookends?'Motivation · Research question':'Research question';
  sub.textContent=isCover?'Authors & affiliations':'What question does the paper address?';
- box(title,isCover?t.cover:t.body);box(sub,isCover?t.subtitle:[.075,.33,.83,.15]);
+ box(title,isCover?t.cover:t.body);box(sub,isCover?t.subtitle:redBody?[.045,.115,.91,.10]:[.075,.33,.83,.15]);
+ for(const el of [title,sub]){el.style.fontFamily=redBody?'Arial, sans-serif':'';el.style.fontWeight=redBody?'700':'';el.style.fontSize=redBody?'2.115cqw':''}
  title.style.justifyContent=sub.style.justifyContent=isCover?'center':'flex-start';
  function colors(){if(baked)return;const im=$('bg');if(!im.naturalWidth)return;const cn=document.createElement('canvas');cn.width=im.naturalWidth;cn.height=im.naturalHeight;const ctx=cn.getContext('2d');ctx.drawImage(im,0,0);for(const el of [title,sub]){
  const x=(parseFloat(el.style.left)+parseFloat(el.style.width)*.5)/100,y=(parseFloat(el.style.top)+parseFloat(el.style.height)*.5)/100;
