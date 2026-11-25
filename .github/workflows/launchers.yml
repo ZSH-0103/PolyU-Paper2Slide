@@ -1,0 +1,50 @@
+name: Launcher smoke test
+on:
+  push:
+    paths:
+      - 'start-*'
+      - 'launch.py'
+      - '*.py'
+      - 'requirements.txt'
+      - '.github/workflows/launchers.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  launch:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Launch and read built-in templates
+        shell: python
+        env:
+          PAPER_STUDIO_OPEN_BROWSER: '0'
+        run: |
+          import json, os, subprocess, time
+          from urllib.request import urlopen
+          cmd = ['cmd', '/c', 'start-windows.cmd'] if os.name == 'nt' else ['sh', 'start-linux.sh']
+          process = subprocess.Popen(cmd, stdin=subprocess.DEVNULL)
+          try:
+              for _ in range(240):
+                  if process.poll() is not None:
+                      raise RuntimeError(f'Launcher exited with {process.returncode}')
+                  try:
+                      with urlopen('http://127.0.0.1:8769/api/templates', timeout=2) as result:
+                          catalog = json.load(result)
+                      break
+                  except OSError:
+                      time.sleep(1)
+              else:
+                  raise TimeoutError('Workspace did not start')
+              assert {t['name'] for t in catalog['templates']} >= {'PolyU Red', 'PolyU Blue'}
+              assert {p['id'] for p in catalog['providers']} == {'codex','deepseek','workbuddy','openai-compatible'}
+              subprocess.run(cmd, check=True, timeout=15, stdin=subprocess.DEVNULL)
+          finally:
+              process.terminate()

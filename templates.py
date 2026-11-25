@@ -15,11 +15,11 @@ RUNTIME = Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies'
 RED = 'polyu-transcope'
 
 def catalog():
-    return [json.loads(f.read_text()) for f in sorted(LIB.glob('*/template.json'),key=lambda p:(p.parent.name!=RED,p.parent.name)) if not f.parent.name.startswith('.')]
+    return [json.loads(f.read_text(encoding='utf-8')) for f in sorted(LIB.glob('*/template.json'),key=lambda p:(p.parent.name!=RED,p.parent.name)) if not f.parent.name.startswith('.')]
 
 def red_asset():
     assets=SKILL/'assets/beamer-template'
-    return json.loads((assets/'layout.json').read_text()),assets/'polyu-lockup.png'
+    return json.loads((assets/'layout.json').read_text(encoding='utf-8')),assets/'polyu-lockup.png'
 
 def init_red(refresh=False):
     folder=LIB/RED
@@ -40,27 +40,27 @@ def init_red(refresh=False):
 
 def save_meta(folder, key, name,w,h,cover,sub,body):
     data=dict(id=key,name=name[:90],width=w,height=h,cover=cover,subtitle=sub,body=body)
-    (folder/'template.json').write_text(json.dumps(data,ensure_ascii=False))
+    (folder/'template.json').write_text(json.dumps(data,ensure_ascii=False),encoding='utf-8')
     return data
 
 def import_template(data,name):
     key=hashlib.sha256(data).hexdigest()[:24]
     dest=LIB/key
-    if (dest/'template.json').exists(): return json.loads((dest/'template.json').read_text())
+    if (dest/'template.json').exists(): return json.loads((dest/'template.json').read_text(encoding='utf-8'))
     with ZipFile(BytesIO(data)) as z:
-        if len(z.infolist())>7000 or sum(a.file_size for a in z.infolist())>240_000_000: raise ValueError('模板解压后过大。')
-        if 'ppt/presentation.xml' not in z.namelist(): raise ValueError('请选择 PowerPoint .pptx 文件。')
+        if len(z.infolist())>7000 or sum(a.file_size for a in z.infolist())>240_000_000: raise ValueError('The unpacked template is too large.')
+        if 'ppt/presentation.xml' not in z.namelist(): raise ValueError('Choose a PowerPoint .pptx file.')
         # External media and linked objects are unnecessary for a reusable background.
         from lxml import etree
         for f in z.namelist():
             if f.endswith('.rels'):
                 for rel in etree.fromstring(z.read(f)):
                     if rel.get('TargetMode')=='External' and not rel.get('Type','').endswith('/hyperlink'):
-                        raise ValueError('模板含外部资源，请先在 PowerPoint 中嵌入图片再导入。')
+                        raise ValueError('This template links to external resources. Embed the images in PowerPoint before importing.')
     p=Presentation(BytesIO(data))
-    if not len(p.slides): raise ValueError('模板没有幻灯片。')
+    if not len(p.slides): raise ValueError('The template has no slides.')
     w,h=p.slide_width,p.slide_height
-    if not .45<w/h<3: raise ValueError('暂不支持此页面宽高比。')
+    if not .45<w/h<3: raise ValueError('This slide aspect ratio is unsupported.')
     cover,sub,body=[.08,.29,.84,.24],[.08,.56,.84,.15],[.065,.055,.87,.13]
     for i,s in enumerate(list(p.slides)[:2]):
         for sh in list(s.shapes):
