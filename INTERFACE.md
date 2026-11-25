@@ -12,6 +12,8 @@ Build a loopback-only research-paper slide studio with two tabs, a workspace and
 All POSTs require the header `X-Studio: 1`. The server validates its local host and browser origin.
 
 - GET /api/templates → {templates,model,backend,providers:[{id,label,model,vision}]}
+- POST /api/providers/ID/test or /save with JSON {model,base,key,region,vision,remember}. Test uses the draft for a short model request. Save applies it immediately. Responses expose key presence only. An empty key retains the previous one for the same destination.
+- POST /api/providers/ID/reset with {} restores startup defaults and removes remembered settings.
 - POST /api/templates?name=... with binary PPTX → template metadata
 - POST /api/chat with JSON {messages:[{role,content}],template,minutes,backend} → {reply}
 - POST /api/jobs?template=ID&minutes=5&backend=deepseek with multipart fields paper (PDF) and conversation (JSON string); raw PDF remains supported → {id}
@@ -20,7 +22,7 @@ All POSTs require the header `X-Studio: 1`. The server validates its local host 
 
 ## Model contract
 
-Implement `call_model(work,prompt,*,backend=BACKEND,image=None,timeout=90) -> str` in models.py. A conversational call returns plain text. A planner call returns a single JSON object with title, authors and slides. Each content slide has a short paper section label (section), a title, one to three {keyword,text} points, speaker notes, a one-based physical PDF page, and an optional exhibit {label,box:[left,top,right,bottom]}. Box coordinates are relative to the PDF page on a 0–1000 scale. Defaults, validation and example JSON are in generate.py. The optional backend on each chat or job selects codex, deepseek, workbuddy, or openai-compatible. Omission uses the server default. Each queued job retains its chosen provider. The client submits only the provider ID. Credentials and executable paths are server settings.
+Implement `call_model(work,prompt,*,backend=BACKEND,image=None,timeout=90) -> str` in models.py. A conversational call returns plain text. A planner call returns a single JSON object with title, authors and slides. Each content slide has a short paper section label (section), a title, one to three {keyword,text} points, speaker notes, a one-based physical PDF page, and an optional exhibit {label,box:[left,top,right,bottom]}. Box coordinates are relative to the PDF page on a 0–1000 scale. Defaults, validation and example JSON are in generate.py. The optional backend on each chat or job selects codex, deepseek, workbuddy, or openai-compatible. Omission uses the server default. Each chat and queued job takes a snapshot of its provider configuration. The client sends a key only in a settings POST. Executable paths are controlled locally.
 
 Red content slides show the section label beside the logo and the specific title below the red band. Both use bold, left-aligned Arial 20.3 pt. PolyU Blue uses “Section · Title” throughout, including its native cover and closing.
 

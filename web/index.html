@@ -6,7 +6,7 @@
 <input type="file" id="pdf" accept=".pdf,application/pdf" hidden><button class="drop" id="drop"><span class="fileicon" aria-hidden="true">PDF</span><strong id="fileTitle">Choose a PDF or drop it here</strong><span id="fileInfo">PDF with selectable text, up to 45 MB</span></button>
 <div class="controls"><button id="styleButton" class="setting"><span>Presentation template</span><strong id="styleText">Choose template</strong><b>⌄</b></button><button id="timeButton" class="setting"><span>Speaking time</span><strong id="timeText">Set duration</strong><b>⌄</b></button></div>
 <p class="hint" id="planText">Choose a template and speaking time to see your slide count.</p>
-<div class="provider"><label for="modelBackend">AI provider</label><select id="modelBackend" aria-describedby="modelLabel"></select><p class="model" id="modelLabel"></p></div>
+<div class="provider"><label for="modelBackend">AI provider</label><select id="modelBackend" aria-describedby="modelLabel"></select><button class="textlink" id="configure" hidden>Configure</button><p class="model" id="modelLabel"></p></div>
 <section class="customize" aria-labelledby="chatHeading">
 <div class="chathead"><h2 id="chatHeading">Custom instructions</h2><button id="clearChat" class="textlink" hidden>Clear chat</button></div>
 <div id="chatLog" role="log" aria-label="Customization chat" aria-live="polite" hidden></div>
@@ -19,6 +19,21 @@
 </section>
 <section id="library" hidden><div class="heading libraryheading"><div><h1>Template library<span>.</span></h1><p>Choose a design for your next talk or import your own PowerPoint template.</p></div><button class="primary" id="importLibrary">+ Import PPTX</button></div><div id="shelf" class="grid"></div></section>
 </main><dialog id="styles"><div class="dialoghead"><h2>Choose a presentation template</h2><button class="close" aria-label="Close">×</button></div><div id="choices" class="grid"></div><button id="importChoice" class="textlink">+ Import PPTX template</button></dialog>
+<dialog id="connectionDialog" aria-labelledby="connectionTitle">
+<div class="dialoghead"><h2 id="connectionTitle">Provider settings</h2><button class="close" aria-label="Close">×</button></div>
+<form id="connectionForm" autocomplete="off">
+<label class="field" id="regionField">CodeBuddy edition<select id="connectionRegion"><option value="inherit">Use harness settings</option><option value="internal">China</option><option value="international">International</option><option value="ioa">Tencent iOA</option></select></label>
+<label class="field" id="baseField">API base URL<input type="url" id="connectionBase" placeholder="http://127.0.0.1:11434/v1"></label>
+<label class="field">Model ID<input type="text" id="connectionModel" maxlength="256" spellcheck="false"></label>
+<label class="field" id="keyField">API key<input type="password" id="connectionKey" maxlength="8192" autocomplete="off" spellcheck="false"></label>
+<p id="keyHelp"></p>
+<a id="keyPortal" class="textlink" target="_blank" rel="noopener noreferrer" hidden>Get an API key ↗</a>
+<label class="checkline" id="visionField"><input type="checkbox" id="connectionVision"> Send exhibit images to this model</label>
+<label class="checkline"><input type="checkbox" id="rememberConnection"> Remember on this computer</label>
+<p>By default, settings last until Paper2Slide closes. Remembering saves the settings and entered key in a private local file on this computer.</p>
+<div class="connectionActions"><button type="submit" class="primary" value="save">Save settings</button><button type="submit" class="settingTest" value="test">Test connection</button><button type="button" class="textlink" id="resetConnection" hidden>Forget settings</button></div>
+<p id="connectionStatus" role="status"></p>
+</form></dialog>
 <dialog id="timing"><div class="dialoghead"><h2>Set speaking time</h2><button class="close" aria-label="Close">×</button></div><p>Include the opening and conclusion. Speaking time determines slide count and depth.</p><div id="presets"></div><label class="timefield">Custom duration <input id="mins" type="number" min="1" max="45" step="1" placeholder="1–45"> min</label><p id="estimate"></p><button id="confirmTime" class="primary">Confirm duration</button></dialog>
 <dialog id="importDialog"><div class="dialoghead"><h2>Import a PowerPoint template</h2><button class="close" aria-label="Close">×</button></div><p>Slide 1 supplies the cover and slide 2 the content layout. For best results, remove sample content and keep the slide master, logos and backgrounds.</p><label class="field">Template name<input id="importName" type="text" maxlength="90" placeholder="For example, Lab meeting"></label><label class="field">PowerPoint file<input id="ppt" type="file" accept=".pptx"></label><button class="primary" id="importSubmit">Add to library</button><p id="importState" role="status"></p></dialog>
 <div id="notice" aria-live="polite" hidden></div><script src="/app.js"></script></body></html>

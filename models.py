@@ -8,34 +8,14 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-BACKEND=os.getenv('PAPER_STUDIO_BACKEND','codex')
-LABELS = {
-    'codex': 'Codex (GPT)',
-    'deepseek': 'DeepSeek API',
-    'workbuddy': 'WorkBuddy harness',
-    'openai-compatible': 'Custom API / local model',
-}
-
+from connections import BACKEND, LABELS, connections
 
 def model_name(backend):
-    if backend == 'deepseek':
-        return os.getenv('DEEPSEEK_MODEL', 'deepseek-flash')
-    if backend == 'workbuddy':
-        return os.getenv('WORKBUDDY_MODEL', '')
-    if backend == 'codex':
-        default = os.getenv('PAPER_STUDIO_MODEL', 'gpt-6.2-sol') if BACKEND == 'codex' else 'gpt-6.2-sol'
-        return os.getenv('CODEX_MODEL', default)
-    return os.getenv('PAPER_STUDIO_API_MODEL', os.getenv('PAPER_STUDIO_MODEL', '') if BACKEND == backend else '')
+    return connections.get(backend).model
 
 
 def has_vision(backend):
-    if backend == 'workbuddy':
-        return False
-    if backend == 'deepseek':
-        return os.getenv('DEEPSEEK_VISION', '0') == '1'
-    if backend == BACKEND:
-        return os.getenv('PAPER_STUDIO_VISION', '1' if backend == 'codex' else '0') == '1'
-    return backend == 'codex'
+    return connections.get(backend).vision
 
 
 def workbuddy_command():
@@ -47,23 +27,23 @@ def workbuddy_command():
     node = shutil.which('node')
     if not override and node and desktop.is_file():
         return [node, str(desktop)]
-    raise ValueError('Install and sign in to CodeBuddy CLI, or set PAPER_STUDIO_WORKBUDDY_CLI to its executable.')
+    raise ValueError('Install CodeBuddy CLI or a supported WorkBuddy desktop harness, then test the connection again.')
 
 
 def check_backend(backend):
-    if backend not in LABELS:
-        raise ValueError('Unknown model provider. Choose a provider from the workspace.')
-    if backend == 'deepseek' and not os.getenv('DEEPSEEK_API_KEY'):
-        raise ValueError('Set DEEPSEEK_API_KEY and restart Paper2Slide to use DeepSeek.')
-    if backend == 'workbuddy':
+    conf = connections.get(backend)
+    if conf.id == 'deepseek' and not conf.key:
+        raise ValueError('Open Configure and enter your DeepSeek API key.')
+    if conf.id == 'workbuddy':
         workbuddy_command()
-    if backend == 'openai-compatible' and (not os.getenv('PAPER_STUDIO_BASE_URL', '').startswith(('http://', 'https://')) or not model_name(backend)):
-        raise ValueError('Set PAPER_STUDIO_BASE_URL and PAPER_STUDIO_API_MODEL and restart Paper2Slide.')
-    return backend
+    if conf.id == 'openai-compatible' and (not conf.base.startswith(('http://', 'https://')) or not conf.model):
+        raise ValueError('Open Configure and enter the API base URL and model ID.')
+    return conf
 
 
 def providers():
-    return [dict(id=k, label=v, model=model_name(k), vision=has_vision(k)) for k,v in LABELS.items()]
+    return [connections.public(provider) for provider in LABELS]
+
 
 
 PROVIDER='{name="OpenAI",base_url="https://chatgpt.com/backend-api/codex",wire_api="responses",requires_openai_auth=true,supports_websockets=false,request_max_retries=0,stream_max_retries=0}'
@@ -96,13 +76,22 @@ def _codex(work,prompt,image,timeout):
     return messages[-1].strip()
 
 
-def _workbuddy(work, prompt, timeout):
+def _workbuddy(work, prompt, timeout, conf):
     args = workbuddy_command() + ['-p', '--output-format', 'json', '--tools', '',
                                  '--strict-mcp-config', '--no-session-persistence']
-    if model_name('workbuddy'):
-        args.extend(['--model', model_name('workbuddy')])
+    if conf.model:
+        args.extend(['--model', conf.model])
+    env = os.environ.copy()
+    if conf.region != 'inherit':
+        env.pop('CODEBUDDY_INTERNET_ENVIRONMENT', None)
+        if conf.region != 'international':
+            env['CODEBUDDY_INTERNET_ENVIRONMENT'] = conf.region
+    env.pop('CODEBUDDY_API_KEY', None)
+    if conf.key:
+        env['CODEBUDDY_API_KEY'] = conf.key
+        env.pop('CODEBUDDY_AUTH_TOKEN', None)
     run = subprocess.run(args, input=prompt, cwd=work, encoding='utf-8',
-                         capture_output=True, timeout=timeout)
+                         capture_output=True, timeout=timeout, env=env)
     try:
         result = json.loads(run.stdout)
     except ValueError:
@@ -113,33 +102,29 @@ def _workbuddy(work, prompt, timeout):
         result = {}
     answer = result.get('result')
     if 'authentication required' in (answer or run.stdout or '').lower():
-        raise RuntimeError('WorkBuddy requires login. Open CodeBuddy CLI, run /login, and try again.')
+        raise RuntimeError('WorkBuddy requires authentication. Open Configure, select your edition and enter a CodeBuddy API key.')
     if run.returncode or result.get('is_error') or not isinstance(answer, str) or not answer.strip():
-        raise RuntimeError('WorkBuddy could not complete the request. Check your CodeBuddy CLI login and model access.')
+        raise RuntimeError('WorkBuddy could not complete the request. Check the edition, key and model in Configure.')
     return answer.strip()
 
 
 def call_model(work, prompt, *, backend=BACKEND, image=None, timeout=90):
     """Return the selected provider's final text for one chat or plan."""
-    check_backend(backend)
-    if backend == 'codex':
+    conf = check_backend(backend)
+    if conf.id == 'codex':
         return _codex(work, prompt, image, timeout)
-    if backend == 'workbuddy':
-        return _workbuddy(work, prompt, timeout)
-    if backend == 'deepseek':
-        base = 'https://api.deepseek.com'
-        key = os.environ['DEEPSEEK_API_KEY']
-    else:
-        base = os.environ['PAPER_STUDIO_BASE_URL'].rstrip('/')
-        key = os.getenv('PAPER_STUDIO_API_KEY')
+    if conf.id == 'workbuddy':
+        return _workbuddy(work, prompt, timeout, conf)
+    base, key = conf.base, conf.key
     content=prompt
     if image is not None:
         encoded=base64.b64encode(image.read_bytes()).decode('ascii')
         content=[{'type':'text','text':prompt},{'type':'image_url','image_url':{'url':'data:image/jpeg;base64,'+encoded}}]
-    payload={'model':model_name(backend),'messages':[{'role':'user','content':content}],'stream':False}
+    payload={'model':conf.model,'messages':[{'role':'user','content':content}],'stream':False}
     headers={'Content-Type':'application/json'}
-    if key: headers['Authorization']='Bearer '+key
+
     request=urllib.request.Request(base+'/chat/completions',data=json.dumps(payload).encode(),headers=headers)
+    if key: request.add_unredirected_header('Authorization', 'Bearer '+key)
     try:
         with urllib.request.urlopen(request,timeout=timeout) as response:
             result=json.load(response)

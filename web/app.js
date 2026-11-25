@@ -6,6 +6,7 @@ let chatting=false, providers=[];
 const backend=$('modelBackend');
 function showModel(){
  const provider=providers.find(p=>p.id===backend.value);
+ $('configure').hidden=!provider||provider.id==='codex';
  if(provider)$('modelLabel').textContent=[provider.model || (provider.id==='workbuddy'?'Harness default model':'Server configuration'),provider.vision?'Paper text and exhibit previews':'Paper text only'].join(' · ');
 }
 backend.onchange=()=>{sessionStorage.setItem('studioBackend',backend.value);showModel()};
@@ -27,7 +28,7 @@ function displayChat(){
  $('clearChat').hidden=!conversation.length&&!input.value;
 }
 function updateChat(){
- input.disabled=busy;backend.disabled=busy||chatting;
+ input.disabled=busy;backend.disabled=busy||chatting;$('configure').disabled=backend.disabled;
  $('chatSend').disabled=busy||chatting||!backend.value||!input.value.trim();
  $('clearChat').disabled=busy||chatting;
 }
@@ -152,3 +153,75 @@ $('generate').onclick=async()=>{
  catch(e){$('progress').textContent=e.message;$('resultTitle').textContent='Connection failed'}finally{busy=false;update()}
 };
 load().then(async()=>{if(saved){statePanel();try{await follow(saved.id,saved.start)}catch(e){$('progress').textContent=e.message}finally{busy=false;update()}}}).catch(e=>toast(e.message));
+
+const connectionDialog=$('connectionDialog');
+const form=$('connectionForm');
+const portals={
+ internal:'https://copilot.tencent.com/profile/',
+ international:'https://www.codebuddy.ai/profile/keys',
+ ioa:'https://tencent.sso.copilot.tencent.com/profile/keys',
+ inherit:'https://www.codebuddy.cn/docs/cli/iam'
+};
+let editingProvider, submitting=false;
+
+function updateKeyHelp(){
+ const p=editingProvider;
+ const changed=p.id==='openai-compatible'&&$('connectionBase').value.trim().replace(/\/+$/,'')!==p.base
+     ||p.id==='workbuddy'&&$('connectionRegion').value!==p.region;
+ const reuse=p.hasKey&&!changed;
+ $('connectionKey').placeholder=reuse?'Leave blank to keep the current key':'Enter your API key';
+ $('connectionKey').required=p.id==='deepseek'&&!reuse;
+ $('keyHelp').textContent=p.id==='workbuddy'?'Use a CodeBuddy key for the selected edition, or leave blank to use an existing harness login.'
+     :p.id==='openai-compatible'?'Optional for local servers. Enter a new key when changing the endpoint.':'Use a key from your DeepSeek account.';
+ const link=$('keyPortal');
+ link.hidden=p.id==='openai-compatible';
+ link.href=p.id==='deepseek'?'https://platform.deepseek.com/api_keys':portals[$('connectionRegion').value];
+}
+function fillConnection(p){
+ editingProvider=p;
+ $('connectionTitle').textContent=p.label+' settings';
+ $('regionField').hidden=p.id!=='workbuddy';
+ $('baseField').hidden=p.id!=='openai-compatible';
+ $('connectionBase').required=!$('baseField').hidden;
+ $('connectionBase').value=p.base;
+ $('connectionModel').value=p.model;
+ $('connectionModel').required=p.id==='openai-compatible';
+ $('connectionModel').placeholder=p.id==='workbuddy'?'Use the harness default':p.id==='deepseek'?'deepseek-flash':'Model served by the endpoint';
+ $('connectionRegion').value=p.region;
+ $('visionField').hidden=p.id==='workbuddy';
+ $('connectionVision').checked=p.vision;
+ $('connectionKey').value='';
+ $('rememberConnection').checked=p.remembered;
+ $('resetConnection').hidden=!p.customized;
+ updateKeyHelp();
+}
+$('configure').onclick=()=>{
+ fillConnection(providers.find(p=>p.id===backend.value));
+ $('connectionStatus').textContent='';connectionDialog.showModal();
+};
+$('connectionRegion').onchange=updateKeyHelp;
+$('connectionBase').oninput=updateKeyHelp;
+connectionDialog.onclose=()=>{$('connectionKey').value=''};
+connectionDialog.oncancel=e=>{if(submitting)e.preventDefault()};
+async function submitConnection(action){
+ if(submitting)return;
+ const p=editingProvider;
+ const values={model:$('connectionModel').value,base:$('connectionBase').value,key:$('connectionKey').value,
+   region:$('connectionRegion').value,vision:$('connectionVision').checked,remember:$('rememberConnection').checked};
+ submitting=true;
+ const controls=[...connectionDialog.querySelectorAll('input, select, button')];
+ controls.forEach(el=>el.disabled=true);
+ const status=$('connectionStatus');
+ status.textContent=action==='test'?'Sending a short test message…':'Updating settings…';
+ try{
+  const response=await api('/api/providers/'+p.id+'/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-Studio':'1'},
+    body:JSON.stringify(action==='reset'?{}:values)});
+  if(action==='test'){status.textContent=response.message;return}
+  providers=providers.map(item=>item.id===p.id?response:item);showModel();
+  connectionDialog.close();
+  toast(action==='reset'?'Settings cleared. Using startup defaults.':'Settings saved. Ready to use.');
+ }catch(error){status.textContent=error.message}
+ finally{submitting=false;controls.forEach(el=>el.disabled=false)}
+}
+form.onsubmit=e=>{e.preventDefault();submitConnection(e.submitter?.value||'save')};
+$('resetConnection').onclick=()=>submitConnection('reset');

@@ -46,36 +46,22 @@ Use **Template library → Import PPTX** to add a template. The importer takes c
 
 ## Model setup
 
-Choose **AI provider** in the workspace before chatting or generating. Each request uses the selected backend. The same skill, template renderer and slide-count rules apply across providers. Set credentials in the terminal that starts the server, then restart the server when changing them.
+In **AI provider**, choose a service and open **Configure**. Enter the details, click **Test connection** to send a short test message, then **Save settings**. Changes apply to the next chat or generation immediately. An in-progress job keeps its original settings.
 
-| Workspace option | Setup |
+| Workspace option | What to enter |
 | --- | --- |
-| Codex (GPT) | Install and sign in to Codex CLI. Set `CODEX_MODEL` to an available model if needed. Existing Codex setups using `PAPER_STUDIO_MODEL` still work. |
-| DeepSeek API | Set `DEEPSEEK_API_KEY`. The default model is `deepseek-flash`. Set `DEEPSEEK_MODEL` to override it. |
-| WorkBuddy harness | Install Tencent’s CodeBuddy CLI, start it and run `/login`. The app finds `codebuddy` on PATH or uses the WorkBuddy CLI bundled with supported macOS desktop installations when Node.js is available. Set `PAPER_STUDIO_WORKBUDDY_CLI` to override the executable, and optionally `WORKBUDDY_MODEL` to select a model your harness can access. |
-| Custom API / local model | Set `PAPER_STUDIO_BASE_URL` and `PAPER_STUDIO_API_MODEL` for an OpenAI-compatible Chat Completions endpoint. Use `PAPER_STUDIO_API_KEY` if authentication is required. A local example is `http://127.0.0.1:11434/v1` with the model ID served by Ollama. |
+| DeepSeek API | Paste a DeepSeek API key. The default model is `deepseek-flash`. Use the link in the dialog to get a key from DeepSeek. |
+| WorkBuddy harness | Install CodeBuddy CLI or a supported WorkBuddy desktop harness. Choose the edition that issued your **CodeBuddy** API key and paste it into the dialog. The key link opens the provider’s account page. Leave the model ID blank for the harness default. If the harness already has a working login, use **Use harness settings** and leave the key blank. |
+| Custom API / local model | Enter the API base URL and model ID. Add a key for authenticated servers. For example, a local Ollama instance can use `http://127.0.0.1:11434/v1` and the installed model ID. |
+| Codex (GPT) | Uses the existing Codex CLI sign-in. Set `CODEX_MODEL` for a different available model. |
 
-**Try DeepSeek.** On Linux or macOS, enter the key in a Bash terminal and launch from the repository folder:
+[View the WorkBuddy settings dialog](docs/images/workbuddy-settings.png).
 
-```bash
-read -rsp 'DeepSeek API key: ' DEEPSEEK_API_KEY
-echo
-export DEEPSEEK_API_KEY
-python3.12 launch.py
-```
+Settings last for the current server session by default. **Remember on this computer** stores the entered settings and key in a local file readable by your user account. **Forget settings** removes the web configuration and restores the startup defaults. The browser never receives a saved key. Use the image checkbox only with an API model that accepts image messages. WorkBuddy receives paper text and can cite full exhibit pages.
 
-On Windows, use PowerShell in the repository folder:
+Existing shell configurations still work as startup defaults. `PAPER_STUDIO_BACKEND` selects the default provider. DeepSeek accepts `DEEPSEEK_API_KEY` and `DEEPSEEK_MODEL`. Compatible servers accept `PAPER_STUDIO_BASE_URL`, `PAPER_STUDIO_API_MODEL` and optional `PAPER_STUDIO_API_KEY`. WorkBuddy detects `codebuddy` on PATH or a supported macOS desktop installation with Node.js. Administrators can override the executable with `PAPER_STUDIO_WORKBUDDY_CLI`.
 
-```powershell
-$env:DEEPSEEK_API_KEY = [System.Net.NetworkCredential]::new('', (Read-Host 'DeepSeek API key' -AsSecureString)).Password
-.\start-windows.cmd
-```
-
-Select **DeepSeek API** and send a short customization request to check your credentials before uploading a paper. To try **WorkBuddy harness**, select it and send the same request. WorkBuddy reads the prompt over standard input in headless mode. Paper2Slide disables built-in tools and external MCP servers for these calls. WorkBuddy uses text input. Text-only planning cites the original figure or table page. Codex uses exhibit previews by default. DeepSeek can receive them when `DEEPSEEK_VISION=1` is set for a vision-capable model.
-
-For existing integrations, `PAPER_STUDIO_BACKEND` selects the startup default (`codex`, `deepseek`, `workbuddy`, or `openai-compatible`). With `openai-compatible` as the default, `PAPER_STUDIO_MODEL` remains supported and `PAPER_STUDIO_VISION=1` enables image messages. Credentials stay on the server. The selected service receives the customization chat or the extracted paper content for each request.
-
-Provider documentation: [DeepSeek API](https://api-docs.deepseek.com/) · [Tencent CodeBuddy headless mode](https://www.codebuddy.cn/docs/cli/headless).
+Provider documentation: [DeepSeek API](https://api-docs.deepseek.com/) · [CodeBuddy authentication and edition-specific keys](https://www.codebuddy.cn/docs/cli/iam).
 
 ## Reproduce the interface or add another model
 

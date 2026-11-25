@@ -9,7 +9,8 @@ from uuid import uuid4
 from zipfile import BadZipFile
 import json,mimetypes,re,subprocess,threading,sys
 from templates import ROOT,LIB,RUNTIME,catalog,import_template,init_red
-from models import BACKEND, check_backend, model_name, providers
+from connections import connections
+from models import BACKEND, call_model, check_backend, model_name, providers
 from generate import read_paper,plan,export,count_slides,chat_reply,section_name,blue_heading
 
 JOBS=ROOT/'jobs'; WEB=ROOT/'web'
@@ -94,6 +95,20 @@ class Handler(BaseHTTPRequestHandler):
         try:
             url=urlsplit(self.path); params=parse_qs(url.query)
             size=int(self.headers.get('Content-Length','0'))
+            settings = re.fullmatch(r'/api/providers/(deepseek|openai-compatible|workbuddy)/(save|test|reset)', url.path)
+            if settings:
+                if not 0 < size <= 16384:
+                    return self.send(413, {'error':'Invalid settings size.'})
+                payload = json.loads(self.rfile.read(size))
+                provider, action = settings.groups()
+                result = connections.apply(provider, payload, action)
+                if action == 'test':
+                    with TemporaryDirectory(prefix='studio-connect-') as tmp:
+                        answer = call_model(Path(tmp), 'Reply with the single word READY.', backend=result, timeout=40)
+                    if not re.search(r'\bREADY\b', answer, re.IGNORECASE):
+                        raise RuntimeError('The provider responded but did not confirm the test. Check the key, edition and model.')
+                    return self.send(200, {'message':'Connected. The model answered the test message.'})
+                return self.send(200, result)
             if url.path=='/api/chat':
                 if not 0<size<=CHAT_LIMIT+4096: return self.send(413,{'error':'This conversation is too long. Shorten it and try again.'})
                 payload=json.loads(self.rfile.read(size))
@@ -126,7 +141,7 @@ class Handler(BaseHTTPRequestHandler):
             if conversation: (work/'conversation.json').write_text(json.dumps(conversation,ensure_ascii=False),encoding='utf-8')
             workers.submit(generate,work,minutes,theme,conversation,backend)
             self.send(202,{'id':key})
-        except subprocess.TimeoutExpired: self.send(504,{'error':'The model timed out. You can still generate with the instructions you entered.'})
+        except subprocess.TimeoutExpired: self.send(504,{'error':'The model timed out. Check the provider connection and try again.'})
         except RuntimeError as e: self.send(502,{'error':str(e)})
         except ValueError as e: self.send(400,{'error':str(e)})
         except Exception as e:
